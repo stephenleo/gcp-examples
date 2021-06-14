@@ -1,0 +1,5 @@
+.ipynb_checkpoints/
+credentials/
+data/
+*.egg-info/
+*dist/
