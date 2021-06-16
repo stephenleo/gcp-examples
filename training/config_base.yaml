@@ -1,0 +1,17 @@
+workerPoolSpecs:
+  machineSpec:
+    machineType: n1-standard-4
+    acceleratorType: NVIDIA_TESLA_K80
+    acceleratorCount: 1
+  replicaCount: 1
+  containerSpec:
+    imageUri: {IMAGE_URI}
+    args:
+    - tf="gs://leo-us-name-gender/data/us_names_train*.tfrecord"
+    - ef="gs://leo-us-name-gender/data/us_names_val*.tfrecord"
+    - tsf="gs://leo-us-name-gender/data/us_names_test*.tfrecord"
+    - tbs=512
+    - ntex=40000
+    - ne=100
+    - neex=1000
+    - msp="gs://leo-us-name-gender/model/2/"

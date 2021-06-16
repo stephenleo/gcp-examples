@@ -1,9 +1,8 @@
-# json input: {"instances":[{"name":"stephen leo"}, {"name":"leo"}]}
-# Very good explanation of how to format rquest to ai-platform
+# json input: {"instances":[{"name":"stephen"}, {"name":"stephanie"}]}
+# Very good explanation of how to format request to ai-platform
 # https://stackoverflow.com/questions/49172710/what-does-google-cloud-ml-engine-do-when-a-json-request-contains-bytes-or-b6
 
 import tensorflow as tf
-tf.enable_eager_execution()
 
 class CustomOpTfPredictor:
     @classmethod
@@ -12,28 +11,21 @@ class CustomOpTfPredictor:
 
     def __init__(self, model_dir):
         # Load the model during the init function to speed up predictions
-        self.imported = tf.saved_model.load_v2(model_dir)
+        self.imported = tf.saved_model.load(model_dir)
 
         # Load the model signatures
         self.f = self.imported.signatures["serving_default"]
-
-    def to_tensor_format(self, input_name):
-        # Convert name to number
-        input_name = tf.constant([name["name"] for name in input_name])
-        x_processed = tf.map_fn(lambda name: self.x_preprocess([name]), input_name, dtype=tf.float32)
-
-        return x_processed
-
+        
     def predict(self, instances, **kwargs):       
         # Input Pre-Process
         x_processed = self.to_tensor_format(instances)
 
         # Predict
-        predictions = tf.map_fn(lambda x:self.f(x)["dense"], x_processed)
+        predictions = tf.map_fn(lambda x:self.f(x)["output"], x_processed)
         predictions = tf.map_fn(lambda pred: tf.squeeze(pred), predictions)
 
         # Classes
-        class_names = tf.constant(["f", "m"], dtype=tf.string)
+        class_names = tf.constant(["F", "M"], dtype=tf.string)
 
         # Predictions are output from sigmoid so float32 in range 0 -> 1
         # Round to integers for predicted class and string lookup for class name
@@ -54,8 +46,15 @@ class CustomOpTfPredictor:
             "gender": [gender.decode("utf-8") for gender in predicted_classes.numpy().tolist()],
             "probability": class_probability.numpy().tolist()
         }
+    
+    # Pre processing
+    def to_tensor_format(self, input_name):
+        # Convert name to number
+        input_name = tf.constant([name["name"] for name in input_name])
+        x_processed = tf.map_fn(lambda name: self.x_preprocess([name]), input_name, dtype=tf.float32)
 
-    # Pre processing 
+        return x_processed
+
     def dynamic_padding(self, inp, min_size):
         """Pad after the name with spaces to make all names min_size long"""
         # https://stackoverflow.com/questions/42334646/tensorflow-pad-unknown-size-tensor-to-a-specific-size

@@ -41,7 +41,7 @@ def x_preprocess(x):
 def preprocess(x, y):
     """tf.data compatible preprocessing"""
     x_processed = x_preprocess(x)
-    y_processed = tf.cast(tf.equal(y, "m"), dtype=tf.int32)
+    y_processed = tf.cast(tf.equal(y, "M"), dtype=tf.int32)
 
     return x_processed, y_processed
 

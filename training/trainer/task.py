@@ -1,20 +1,16 @@
 #!/usr/bin/env python
-
-# To test locally:
-# gcloud ai-platform local train --module-name trainer.task --package-path trainer/ -- -tf="gs://leo-models/gender_prediction/data/nonzip/toko_names_train*.tfrecord" -ef="gs://leo-models/gender_prediction/data/nonzip/toko_names_val*.tfrecord" -tsf="gs://leo-models/gender_prediction/data/nonzip/toko_names_test*.tfrecord"
-
 # To connect to tensorboard:
     ## On any GCP VM:
-    # tensorboard --logdir="gs://leo-models/gender_prediction/tensorboard/" --port=9120
+    # tensorboard --logdir="gs://leo-us-name-gender/tensorboard/" --port=9120
     
     ## On local machine
-    # gcloud compute ssh jupyter@leo-tf02 -- -NfL 9120:localhost:9120
+    # gcloud compute ssh jupyter@leo-tf -- -NfL 9120:localhost:9120
     ## Open tensorboard in browser by navigating to localhost:9120
 
 import argparse
 import tensorflow as tf
-from trainer import model
-from trainer import utils
+import model
+import utils
 import os
 
 # Bug in TF for MultiWorkerMirroredStrategy (forgot the link)
@@ -23,8 +19,8 @@ if TF_CONFIG and '"master"' in TF_CONFIG:
     os.environ['TF_CONFIG'] = TF_CONFIG.replace('"master"', '"chief"')
 
 # Bug in TF distributed need to instantiate the strategy at the beginning of the job (forgot the link)
-strategy = tf.distribute.experimental.MultiWorkerMirroredStrategy()
-# strategy = tf.distribute.MirroredStrategy()
+# strategy = tf.distribute.experimental.MultiWorkerMirroredStrategy()
+strategy = tf.distribute.MirroredStrategy()
 
 def get_args():
     args_parser = argparse.ArgumentParser()
@@ -42,9 +38,9 @@ def get_args():
     args_parser.add_argument("-ntsex", "--test_examples", help="Number of test examples", default=100, type=int)
 
     # Paths
-    args_parser.add_argument("-msp", "--model_save_path", help="GS path to save model", default="gs://leo-models/gender_prediction/models/x/", type=str)
-    args_parser.add_argument("-tbp", "--tensorboard_path", help="GS path to tensorboard", default="gs://leo-models/gender_prediction/tensorboard/", type=str)
-    args_parser.add_argument("-cpp", "--checkpoint_path", help="GS path to checkpoints", default="gs://leo-models/gender_prediction/tmp/", type=str)
+    args_parser.add_argument("-msp", "--model_save_path", help="GS path to save model", default="gs://leo-us-name-gender/model/x/", type=str)
+    args_parser.add_argument("-tbp", "--tensorboard_path", help="GS path to tensorboard", default="gs://leo-us-name-gender/tensorboard/", type=str)
+    args_parser.add_argument("-cpp", "--checkpoint_path", help="GS path to checkpoints", default="gs://leo-us-name-gender/tmp/", type=str)
 
     return args_parser.parse_args()
 

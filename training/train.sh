@@ -1,33 +1,27 @@
 #!/bin/bash
 now=$(date +"%Y%m%d_%H%M%S")
+NAME="name_gender_prediction"
+TAG="v2"
 JOB_NAME="leo_gp_train_$now"
-STAGING="gs://leo-models"
-REGION="us-west1"
+REGION="us-central1"
 
-python3 setup.py sdist
+# Build the Docker Image
+export PROJECT_ID=$(gcloud config list project --format "value(core.project)")
+export REPO_NAME=ml-docker-repo
+export IMAGE_NAME=$NAME
+export IMAGE_TAG=$TAG
+export IMAGE_URI=us-central1-docker.pkg.dev/${PROJECT_ID}/${REPO_NAME}/${IMAGE_NAME}:${IMAGE_TAG}
 
-gcloud ai-platform jobs submit training $JOB_NAME \
-    --staging-bucket $STAGING \
-    --region $REGION \
-    --scale-tier CUSTOM \
-    --master-machine-type n1-standard-8 \
-    --master-accelerator count=2,type=nvidia-tesla-k80 \
-    --worker-count 3 \
-    --worker-machine-type n1-standard-8 \
-    --worker-accelerator count=2,type=nvidia-tesla-k80 \
-    --runtime-version 1.15 \
-    --python-version 3.7 \
-    --module-name trainer.task \
-    --package-path "/home/jupyter/data-science/official/gender_prediction/training/trainer" \
-    -- \
-    -tf "gs://leo-models/gender_prediction/data/nonzip/toko_names_train*.tfrecord" \
-    -ef "gs://leo-models/gender_prediction/data/nonzip/toko_names_val*.tfrecord" \
-    -tsf "gs://leo-models/gender_prediction/data/nonzip/toko_names_test*.tfrecord" \
-    -tbs=512 \
-    -ntex=25000000 \
-    -ne=100 \
-    -neex=250000 \
-    -msp="gs://leo-models/gender_prediction/models/x/"
+docker build -f Dockerfile -t ${IMAGE_URI} ./
 
+# Push to Artifact Registry
+docker push ${IMAGE_URI}
 
-    #--scale-tier BASIC_GPU \ # Single machine, single GPU to test out.
+# Prepare the config file
+sed 's|{IMAGE_URI}|'$IMAGE_URI'|g' config_base.yaml > config.yaml
+
+# Start the training
+gcloud beta ai custom-jobs create \
+    --region=$REGION \
+    --display-name=$JOB_NAME \
+    --config=config.yaml
