@@ -7,11 +7,11 @@ workerPoolSpecs:
   containerSpec:
     imageUri: {IMAGE_URI}
     args:
-    - tf="gs://leo-us-name-gender/data/us_names_train*.tfrecord"
-    - ef="gs://leo-us-name-gender/data/us_names_val*.tfrecord"
-    - tsf="gs://leo-us-name-gender/data/us_names_test*.tfrecord"
-    - tbs=512
-    - ntex=40000
-    - ne=100
-    - neex=1000
-    - msp="gs://leo-us-name-gender/model/2/"
+    - -tf=gs://leo-us-name-gender/data/us_names_train*.tfrecord
+    - -ef=gs://leo-us-name-gender/data/us_names_val*.tfrecord
+    - -tsf=gs://leo-us-name-gender/data/us_names_test*.tfrecord
+    - -tbs=32
+    - -ntex=40000
+    - -ne=100
+    - -neex=1000
+    - -msp=gs://leo-us-name-gender/model/2/

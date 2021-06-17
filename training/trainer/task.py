@@ -41,13 +41,14 @@ def get_args():
     args_parser.add_argument("-msp", "--model_save_path", help="GS path to save model", default="gs://leo-us-name-gender/model/x/", type=str)
     args_parser.add_argument("-tbp", "--tensorboard_path", help="GS path to tensorboard", default="gs://leo-us-name-gender/tensorboard/", type=str)
     args_parser.add_argument("-cpp", "--checkpoint_path", help="GS path to checkpoints", default="gs://leo-us-name-gender/tmp/", type=str)
+    
 
     return args_parser.parse_args()
 
 def main():
     args = get_args()
     steps_per_epoch = args.train_examples // (args.train_batch_size * args.num_evals)
-
+    
     # Read the data
     # TODO: Improve the checking code
     if ".csv" in args.train_files:
@@ -72,6 +73,7 @@ def main():
     # Train
     callbacks = [
         tf.keras.callbacks.ModelCheckpoint(filepath=args.checkpoint_path, save_weights_only=True),
+        tf.keras.callbacks.EarlyStopping(monitor='val_accuracy', min_delta=0.001, patience=5, mode='max'),
         tf.keras.callbacks.TensorBoard(log_dir=args.tensorboard_path, profile_batch=0) #TF bug: https://github.com/tensorflow/tensorboard/issues/2084
         ]
 

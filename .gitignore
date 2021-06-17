@@ -4,3 +4,4 @@ data/
 models/
 *.egg-info/
 *dist/
+training/config.yaml
