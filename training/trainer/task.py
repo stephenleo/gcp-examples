@@ -73,7 +73,7 @@ def main():
     # Train
     callbacks = [
         tf.keras.callbacks.ModelCheckpoint(filepath=args.checkpoint_path, save_weights_only=True),
-        tf.keras.callbacks.EarlyStopping(monitor='val_accuracy', min_delta=0.001, patience=5, mode='max'),
+        tf.keras.callbacks.EarlyStopping(monitor='val_accuracy', min_delta=0.001, patience=5, mode='max', verbose=1),
         tf.keras.callbacks.TensorBoard(log_dir=args.tensorboard_path, profile_batch=0) #TF bug: https://github.com/tensorflow/tensorboard/issues/2084
         ]
 

@@ -10,8 +10,8 @@ workerPoolSpecs:
     - -tf=gs://leo-us-name-gender/data/us_names_train*.tfrecord
     - -ef=gs://leo-us-name-gender/data/us_names_val*.tfrecord
     - -tsf=gs://leo-us-name-gender/data/us_names_test*.tfrecord
-    - -tbs=32
-    - -ntex=40000
+    - -tbs=64
+    - -ntex=2000000
     - -ne=100
     - -neex=1000
     - -msp=gs://leo-us-name-gender/model/2/
