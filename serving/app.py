@@ -3,12 +3,11 @@
 # https://stackoverflow.com/questions/49172710/what-does-google-cloud-ml-engine-do-when-a-json-request-contains-bytes-or-b6
 
 import tensorflow as tf
+import os
+import logging
+from flask import Flask, request
 
 class CustomOpTfPredictor:
-    @classmethod
-    def from_path(cls, model_dir):
-        return cls(model_dir)
-
     def __init__(self, model_dir):
         # Load the model during the init function to speed up predictions
         self.imported = tf.saved_model.load(model_dir)
@@ -21,7 +20,7 @@ class CustomOpTfPredictor:
         x_processed = self.to_tensor_format(instances)
 
         # Predict
-        predictions = tf.map_fn(lambda x:self.f(x)["output"], x_processed)
+        predictions = tf.map_fn(lambda x:self.f(x)["dense"], x_processed)
         predictions = tf.map_fn(lambda pred: tf.squeeze(pred), predictions)
 
         # Classes
@@ -41,10 +40,17 @@ class CustomOpTfPredictor:
             else:
                 return logit
         class_probability = tf.map_fn(to_probability, predictions, dtype=tf.float32)
+        
+        predicted_classes = predicted_classes.numpy().tolist()
+        class_probability = class_probability.numpy().tolist()
 
         return {
-            "gender": [gender.decode("utf-8") for gender in predicted_classes.numpy().tolist()],
-            "probability": class_probability.numpy().tolist()
+            "predictions": [
+                {
+                    "gender": gender.decode("utf-8"), 
+                    "probability": class_probability[idx]
+                } for idx, gender in enumerate(predicted_classes)
+            ]
         }
     
     # Pre processing
@@ -94,4 +100,30 @@ class CustomOpTfPredictor:
         x_processed = tf.cast(x_processed, tf.float32)
         
         return x_processed
+    
+# Flask App
+app = Flask(__name__)
+app.logger.setLevel(logging.INFO)
 
+print(os.environ['AIP_STORAGE_URI'])
+print(os.environ['AIP_HTTP_PORT'])
+print(os.environ['AIP_PREDICT_ROUTE'])
+print(os.environ['AIP_HEALTH_ROUTE'])
+
+model_dir = os.environ['AIP_STORAGE_URI']
+    
+pred_model = CustomOpTfPredictor(model_dir)
+    
+# Predict Function
+@app.route(os.environ['AIP_PREDICT_ROUTE'], methods=['GET', 'POST'])
+def predict():
+    content = request.get_json()
+    app.logger.info(content)
+    return pred_model.predict(content['instances'])
+
+# Health Check
+@app.route(os.environ['AIP_HEALTH_ROUTE'], methods=['GET', 'POST'])
+def health_check():
+    return {'success': True, 'status': 200}
+    
+app.run(host='0.0.0.0', port=os.environ['AIP_HTTP_PORT'])

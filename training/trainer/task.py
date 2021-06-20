@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # To connect to tensorboard:
     ## On any GCP VM:
-    # tensorboard --logdir="gs://leo-us-name-gender/tensorboard/" --port=9120
+    # tensorboard --logdir="gs://leo-us-name-gender-us-central1/tensorboard/" --port=9120
     
     ## On local machine
     # gcloud compute ssh jupyter@leo-tf -- -NfL 9120:localhost:9120
@@ -38,9 +38,9 @@ def get_args():
     args_parser.add_argument("-ntsex", "--test_examples", help="Number of test examples", default=100, type=int)
 
     # Paths
-    args_parser.add_argument("-msp", "--model_save_path", help="GS path to save model", default="gs://leo-us-name-gender/model/x/", type=str)
-    args_parser.add_argument("-tbp", "--tensorboard_path", help="GS path to tensorboard", default="gs://leo-us-name-gender/tensorboard/", type=str)
-    args_parser.add_argument("-cpp", "--checkpoint_path", help="GS path to checkpoints", default="gs://leo-us-name-gender/tmp/", type=str)
+    args_parser.add_argument("-msp", "--model_save_path", help="GS path to save model", default="gs://leo-us-name-gender-us-central1/models/x/", type=str)
+    args_parser.add_argument("-tbp", "--tensorboard_path", help="GS path to tensorboard", default="gs://leo-us-name-gender-us-central1/tensorboard/", type=str)
+    args_parser.add_argument("-cpp", "--checkpoint_path", help="GS path to checkpoints", default="gs://leo-us-name-gender-us-central1/tmp/", type=str)
     
 
     return args_parser.parse_args()
