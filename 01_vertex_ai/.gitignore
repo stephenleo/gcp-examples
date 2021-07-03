@@ -1,0 +1,7 @@
+.ipynb_checkpoints/
+credentials/
+data/
+models/
+*.egg-info/
+*dist/
+training/config.yaml
