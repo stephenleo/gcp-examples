@@ -47,4 +47,9 @@ Data Query: [Notebook](notebooks/00_DataQuery.ipynb)
 You can view the progress of your training on [GCP Vertex AI console](https://console.cloud.google.com/vertex-ai/training/custom-jobs?project=leo-gcp-sanbox)
 
 ## Publishing a Serving API to GCP AI Platform:
-To be updated
+1. Update the parameters in `serving/serve.sh`. Especially the `MODEL_DIR` where the trained model is saved
+2. Run serve.sh
+    ```
+    cd serving
+    sh serve.sh
+    ```
