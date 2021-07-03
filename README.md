@@ -1,4 +1,7 @@
-# gender prediction
+# End to End ML in Google Cloud Platform's Vertex AI
+- This repo contains a complete example of using GCP's Vertex AI for Machine Learning using a toy example of Name - Gender prediction
+- This repo covers model training and serving
+
 ## LSTM to predict Gender based on US names dateset
 
 This repo has been reworked from the ground-up to use GCP Vertex AI Training and Model Serving of a tensorflow LSTM model. The model has been trained on ~30K names stored in sharded tfrecords and can be distributed using tensorflow MultiWorkerMirroredStrategy. Test data accuracy is pending.
