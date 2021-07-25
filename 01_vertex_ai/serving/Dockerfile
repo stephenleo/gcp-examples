@@ -1,16 +1,8 @@
 # Specifies base image and tag
-FROM tensorflow/tensorflow:2.4.2
-WORKDIR /root
+FROM tiangolo/uvicorn-gunicorn-fastapi:python3.7
 
 # Installs additional packages
-RUN pip install Flask
+RUN pip install tensorflow==2.4.2
 
-# Copies the trainer code to the docker image.
-COPY app.py /root/app.py
-
-# Set the environment variable for flask
-ENV FLASK_APP=app.py
-EXPOSE 5000
-
-# Sets up the entry point to invoke the trainer.
-ENTRYPOINT ["flask", "run", "--host=0.0.0.0"]
+# Copies the serving code to the docker image.
+COPY ./app /app

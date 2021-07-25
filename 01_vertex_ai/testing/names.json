@@ -1,9 +1,9 @@
-{
-    "instances": [
-        {"name": "Marie"},
-        {"name": "Stephen"},
-        {"name": "Leo"},
-        {"name": "stephen"},
-        {"name": "stephanie"}
-    ]
-}
+[
+    "Marie",
+    "Stephen",
+    "Leo",
+    "stephen",
+    "stephanie",
+    "Shilpa",
+    "Annika"
+]
