@@ -6,7 +6,7 @@ REGION=us-central1
 ENDPOINT_NAME=name_gender_prediction
 VERSION_NAME=${ENDPOINT_NAME}_${version}
 MODEL_DIR=gs://leo-us-name-gender-us-central1/models/1/
-PORT=5000
+PORT=80
 
 # Build the Docker Image
 export PROJECT_ID=$(gcloud config list project --format "value(core.project)")

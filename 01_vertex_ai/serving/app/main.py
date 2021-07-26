@@ -1,11 +1,13 @@
-# json input: {"instances":[{"name":"stephen"}, {"name":"stephanie"}]}
-# Very good explanation of how to format request to ai-platform
-# https://stackoverflow.com/questions/49172710/what-does-google-cloud-ml-engine-do-when-a-json-request-contains-bytes-or-b6
-
-import tensorflow as tf
+import uvicorn
+from fastapi import FastAPI
+from pydantic import BaseModel
+from fastapi.logger import logger
 import os
 import logging
-from flask import Flask, request
+from typing import List
+import tensorflow as tf
+
+logging.basicConfig(level=logging.INFO)
 
 class CustomOpTfPredictor:
     def __init__(self, model_dir):
@@ -47,6 +49,7 @@ class CustomOpTfPredictor:
         return {
             "predictions": [
                 {
+                    "name": instances[idx],
                     "gender": gender.decode("utf-8"), 
                     "probability": class_probability[idx]
                 } for idx, gender in enumerate(predicted_classes)
@@ -54,9 +57,9 @@ class CustomOpTfPredictor:
         }
     
     # Pre processing
-    def to_tensor_format(self, input_name):
+    def to_tensor_format(self, input_names):
         # Convert name to number
-        input_name = tf.constant([name["name"] for name in input_name])
+        input_name = tf.constant(input_names)
         x_processed = tf.map_fn(lambda name: self.x_preprocess([name]), input_name, dtype=tf.float32)
 
         return x_processed
@@ -100,30 +103,28 @@ class CustomOpTfPredictor:
         x_processed = tf.cast(x_processed, tf.float32)
         
         return x_processed
-    
-# Flask App
-app = Flask(__name__)
-app.logger.setLevel(logging.INFO)
 
-print(os.environ['AIP_STORAGE_URI'])
-print(os.environ['AIP_HTTP_PORT'])
-print(os.environ['AIP_PREDICT_ROUTE'])
-print(os.environ['AIP_HEALTH_ROUTE'])
+app = FastAPI()
 
 model_dir = os.environ['AIP_STORAGE_URI']
-    
 pred_model = CustomOpTfPredictor(model_dir)
-    
-# Predict Function
-@app.route(os.environ['AIP_PREDICT_ROUTE'], methods=['GET', 'POST'])
-def predict():
-    content = request.get_json()
-    app.logger.info(content)
-    return pred_model.predict(content['instances'])
 
-# Health Check
-@app.route(os.environ['AIP_HEALTH_ROUTE'], methods=['GET', 'POST'])
+class Item(BaseModel):
+    name: str
+
+class ItemList(BaseModel):
+    instances: List[Item]
+        
+@app.post(os.environ['AIP_PREDICT_ROUTE'])
+def predict(instances: ItemList):
+    # https://stackoverflow.com/questions/60844846/read-a-body-json-list-with-fastapi
+    instances = [instance['name'] for instance in instances.dict()['instances']]
+    logger.info(instances)
+    return pred_model.predict(instances)
+
+@app.get(os.environ['AIP_HEALTH_ROUTE'])
 def health_check():
     return {'success': True, 'status': 200}
-    
-app.run(host='0.0.0.0', port=os.environ['AIP_HTTP_PORT'])
+
+if __name__ == '__main__':
+    uvicorn.run(app, host='0.0.0.0', port=os.environ['AIP_HTTP_PORT'])
