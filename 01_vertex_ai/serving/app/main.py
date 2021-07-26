@@ -1,5 +1,6 @@
 import uvicorn
 from fastapi import FastAPI
+from pydantic import BaseModel
 from fastapi.logger import logger
 import os
 import logging
@@ -45,13 +46,15 @@ class CustomOpTfPredictor:
         predicted_classes = predicted_classes.numpy().tolist()
         class_probability = class_probability.numpy().tolist()
 
-        return [
-            {
-                "name": instances[idx],
-                "gender": gender.decode("utf-8"), 
-                "probability": class_probability[idx]
-            } for idx, gender in enumerate(predicted_classes)
-        ]
+        return {
+            "predictions": [
+                {
+                    "name": instances[idx],
+                    "gender": gender.decode("utf-8"), 
+                    "probability": class_probability[idx]
+                } for idx, gender in enumerate(predicted_classes)
+            ]
+        }
     
     # Pre processing
     def to_tensor_format(self, input_names):
@@ -106,10 +109,16 @@ app = FastAPI()
 model_dir = os.environ['AIP_STORAGE_URI']
 pred_model = CustomOpTfPredictor(model_dir)
 
+class Item(BaseModel):
+    name: str
 
+class ItemList(BaseModel):
+    instances: List[Item]
+        
 @app.post(os.environ['AIP_PREDICT_ROUTE'])
-def predict(instances: List[str]):
+def predict(instances: ItemList):
     # https://stackoverflow.com/questions/60844846/read-a-body-json-list-with-fastapi
+    instances = [instance['name'] for instance in instances.dict()['instances']]
     logger.info(instances)
     return pred_model.predict(instances)
 

@@ -1,9 +1,11 @@
-[
-    "Marie",
-    "Stephen",
-    "Leo",
-    "stephen",
-    "stephanie",
-    "Shilpa",
-    "Annika"
-]
+{
+    "instances":[
+        {"name": "Marie"},
+        {"name": "Stephen"},
+        {"name": "Leo"},
+        {"name": "stephen"},
+        {"name": "stephanie"},
+        {"name": "Shilpa"},
+        {"name": "Annika"}
+    ]
+}
