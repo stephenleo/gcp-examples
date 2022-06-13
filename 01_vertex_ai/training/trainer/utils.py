@@ -62,27 +62,34 @@ def csv_reader_dataset(filepaths, repeat=1, n_readers=8, n_threads=tf.data.exper
     """Read sharded csv files, preprocess, shuffle and create batches using tf.data API"""
     defs = [tf.constant(["NaN"], dtype=tf.string)]*2
 
-    dataset = tf.data.Dataset\
-        .list_files(filepaths)\
-        .interleave(lambda filepath: tf.data.experimental.CsvDataset(filepath, defs, select_cols=[0,1], header=True), 
-                                 cycle_length=tf.data.experimental.AUTOTUNE, num_parallel_calls=tf.data.experimental.AUTOTUNE)\
-        .shuffle(shuffle_buffer_size).repeat()\
-        .batch(batch_size, drop_remainder=True)\
-        .map(preprocess, num_parallel_calls=tf.data.experimental.AUTOTUNE)\
+    return (
+        tf.data.Dataset.list_files(filepaths)
+        .interleave(
+            lambda filepath: tf.data.experimental.CsvDataset(
+                filepath, defs, select_cols=[0, 1], header=True
+            ),
+            cycle_length=tf.data.experimental.AUTOTUNE,
+            num_parallel_calls=tf.data.experimental.AUTOTUNE,
+        )
+        .shuffle(shuffle_buffer_size)
+        .repeat()
+        .batch(batch_size, drop_remainder=True)
+        .map(preprocess, num_parallel_calls=tf.data.experimental.AUTOTUNE)
         .prefetch(tf.data.experimental.AUTOTUNE)
-    
-    return dataset
+    )
 
 def tfrecord_reader_dataset(filepaths, repeat=1, n_readers=8, n_threads=tf.data.experimental.AUTOTUNE, shuffle_buffer_size=10000, batch_size=32):
-    # https://stackoverflow.com/questions/58014123/how-to-improve-data-input-pipeline-performance
-    dataset = tf.data.Dataset\
-        .list_files(filepaths)\
-        .interleave(tf.data.TFRecordDataset, 
-                    cycle_length=tf.data.experimental.AUTOTUNE, num_parallel_calls=tf.data.experimental.AUTOTUNE)\
-        .shuffle(shuffle_buffer_size).repeat()\
-        .batch(batch_size, drop_remainder=True)\
-        .map(_parse_function, num_parallel_calls=tf.data.experimental.AUTOTUNE)\
-        .map(preprocess, num_parallel_calls=tf.data.experimental.AUTOTUNE)\
+    return (
+        tf.data.Dataset.list_files(filepaths)
+        .interleave(
+            tf.data.TFRecordDataset,
+            cycle_length=tf.data.experimental.AUTOTUNE,
+            num_parallel_calls=tf.data.experimental.AUTOTUNE,
+        )
+        .shuffle(shuffle_buffer_size)
+        .repeat()
+        .batch(batch_size, drop_remainder=True)
+        .map(_parse_function, num_parallel_calls=tf.data.experimental.AUTOTUNE)
+        .map(preprocess, num_parallel_calls=tf.data.experimental.AUTOTUNE)
         .prefetch(tf.data.experimental.AUTOTUNE)
-    
-    return dataset
+    )

@@ -2,7 +2,7 @@
 import string
 import tensorflow as tf
 
-LETTERS = " " + string.ascii_lowercase
+LETTERS = f" {string.ascii_lowercase}"
 EMBEDDING = 256
 
 # Model
